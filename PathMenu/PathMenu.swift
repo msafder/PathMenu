@@ -75,7 +75,7 @@ public class PathMenu: UIView {
     public var startButton: PathMenuItem?
     public weak var delegate: PathMenuDelegate?
 
-    public var flag: Int = 0
+    public var flag: Int?
     public var timer: Timer?
     
     public var timeOffset: CGFloat = 0.036
@@ -161,9 +161,9 @@ public class PathMenu: UIView {
             angle = 0
         }
         
-        UIView.animate(withDuration: Double(startMenuAnimationDuration)) { [weak self] () -> Void in
-            self?.startButton?.transform = CGAffineTransform(rotationAngle: angle)
-        }
+//        UIView.animate(withDuration: Double(startMenuAnimationDuration)) { [weak self] () -> Void in
+//            self?.startButton?.transform = CGAffineTransform(rotationAngle: angle)
+//        }
         
         if timer == nil {
             timer = Timer.scheduledTimer(timeInterval: Double(timeOffset), target: self, selector: selector, userInfo: nil, repeats: true)
@@ -180,8 +180,9 @@ public class PathMenu: UIView {
             return
         }
         
-        let tag = 1000 + flag
-        let item = viewWithTag(tag) as! PathMenuItem
+        let tag = 1000 + flag!
+//        let item = viewWithTag(tag) as! PathMenuItem
+        guard let item = viewWithTag(tag) as? PathMenuItem else {return}
         
         let rotateAnimation = CAKeyframeAnimation(keyPath: "transform.rotation.z")
         rotateAnimation.values = [NSNumber(value: 0.0), NSNumber(value: Float(expandRotation)), NSNumber(value: 0.0)]
@@ -212,18 +213,21 @@ public class PathMenu: UIView {
         item.layer.add(animationgroup, forKey: "Expand")
         item.center = item.endPoint
         
-        flag += 1
+        flag! += 1
     }
     
     public func close() {
-        if flag == -1 {
+        if let fl = flag {
+        if fl == -1 {
             timer?.invalidate()
             timer = nil
             return
         }
         
-        let tag = 1000 + flag
-        let item = viewWithTag(tag) as! PathMenuItem
+        let tag = 1000 + fl
+//        let item = viewWithTag(tag) as! PathMenuItem
+            
+        guard let item = viewWithTag(tag) as? PathMenuItem else {return}
         
         let rotateAnimation = CAKeyframeAnimation(keyPath: "transform.rotation.z")
         rotateAnimation.values = [NSNumber(value: 0.0), NSNumber(value: Float(closeRotation)), NSNumber(value: 0.0)]
@@ -245,14 +249,15 @@ public class PathMenu: UIView {
         animationgroup.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseIn)
         animationgroup.delegate = self
 
-        if flag == 0 {
+        if fl == 0 {
             animationgroup.setValue("lastAnimation", forKey: "id")
         }
         
         item.layer.add(animationgroup, forKey: "Close")
         item.center = item.startPoint
         
-        flag -= 1
+        flag! -= 1
+        }
     }
     
     public func setMenu() {
